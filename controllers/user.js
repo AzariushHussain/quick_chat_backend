@@ -2,7 +2,7 @@ const  { responseMessages }  = require('../utils/constants');
 const  formatMessage  = require('../utils/messageformatter');
 const { isValidIndianPhoneNumber } = require('../utils/phoneValidator');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
+const User = require('../models/userModel');
 const { constants } = require('../utils/constants');
 
 let otpAttempts = 0; 

@@ -1,5 +1,5 @@
-const { Chat, Message } = require('../models/chat');
-const { User } = require('../models/user');
+const { Chat, Message } = require('../models/chatModel');
+const { User } = require('../models/userModel');
 
 /**
  * Fetches a chat by its ID.

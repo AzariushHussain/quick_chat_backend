@@ -1,10 +1,10 @@
 const express = require('express');
-const router = express.Router();
-const { handleLogin, handleVerifyOTP, handleGetUser } = require('../controllers/user');
 const verifyToken = require('../middlewares/auth');
+const { handleLogin, handleVerifyOTP, handleGetUser } = require('../controllers/user');
 
-router.post('/login',handleLogin);
-router.post('/verify', handleVerifyOTP);
+
+const router = express.Router();
+router.use(verifyToken)
 router.get('/',verifyToken, handleGetUser)
 
 module.exports = router;
