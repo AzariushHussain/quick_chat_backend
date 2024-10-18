@@ -3,8 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const connectMongoDb = require('./connection');
-const { setupWebSocket } = require('./utils/websocket');
+const { registerSocket } = require('./utils/socketServer');
 const routes = require('./routes/index');
+const { Server } = require('socket.io');    
+const { publishEvent, setIo } = require('./utils/redis');
 
 // Create Express app and HTTP server
 const app = express();
@@ -28,7 +30,15 @@ app.use(express.json());
     }
 })();
 // WebSocket setup
-setupWebSocket(server);
+const io = new Server(server, {
+    cors: {
+        origin: '*'
+    }
+});
+
+setIo(io);
+registerSocket(io)
+// setupWebSocket(server);
 
 // Route handling
 app.use('/api', routes);

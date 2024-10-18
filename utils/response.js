@@ -19,6 +19,7 @@ const MESSAGE = {
     ERROR_FETCHING_CHAT: 'Error fetching chat',
     ERROR_UPDATING_CHAT: 'Error updating chat',
     ERROR_DELETING_CHAT: 'Error deleting chat',
+    ERROR_FETCHING_USERS: 'Error fetching users',
     ERROR_NOT_FOUND: 'Chat not found',
     ERROR_USER_NOT_FOUND: 'User not found',
     ERROR_MESSAGE_NOT_FOUND: 'Message not found',

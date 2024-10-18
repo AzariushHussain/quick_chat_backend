@@ -10,7 +10,7 @@ const createChat = async (users, name, type) => {
         name,
         type,
     });
-    return await ChatModel.save();
+    return await chat.save();
 };
 
 const findChat = async (criteria) => {
@@ -26,7 +26,7 @@ const deleteChat = async (chatId) => {
 };
 
 const getMessagesForChat = async (chatId) => {
-    return await MessageModel.find({ chatId }).populate('user', 'username').exec();
+    return await MessageModel.find({ chat: chatId }).populate('user').exec();
 };
 
 const createMessage = async (messageData) => {

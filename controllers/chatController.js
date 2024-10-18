@@ -7,8 +7,8 @@ const {
     createMessage,
     deleteMessage,
 } = require('../models/chatModel');
-const { UserModel } = require('../models/schemaLoader');
-
+const { constants } = require('../utils/constants');
+const { findUserById } = require('../models/userModel');
 const { successResponse, errorResponse } = require('../utils/response');
 const { MESSAGE } = require('../utils/response');
 
@@ -25,12 +25,13 @@ const getContacts = async (req, res) => {
 
 const createContact = async (req, res) => {
     try {
+        console.log(req.body);
         const { id } = req.user;
         const { users, name } = req.body;
         users.push(id);
 
         const participants = await Promise.all(
-            users.map(async (userId) => await User.findOne({ _id: userId }))
+            users.map(async (userId) => await findUserById(userId))
         );
 
         if (participants.length > 2) {
@@ -55,37 +56,11 @@ const createContact = async (req, res) => {
     }
 };
 
-const deleteContact = async (req, res) => {
-    try {
-        const { chatId } = req.body;
-        if (!chatId) {
-            return errorResponse(res, MESSAGE.ERROR_INVALID_INPUT);
-        }
-
-        const chat = await findChat({ _id: chatId });
-
-        if (!chat) {
-            return errorResponse(res, MESSAGE.ERROR_NOT_FOUND);
-        }
-
-        if (chat.type === constants.chat.type.SINGLE) {
-            await deleteChat(chatId);
-            return successResponse(res, MESSAGE.SUCCESS_CHAT_DELETED);
-        } else if (chat.type === constants.chat.type.GROUP) {
-            // Assuming req.body.participantPhone exists and logic to handle participant removal is correct.
-            chat.users = chat.users.filter((user) => user !== req.body.participantPhone);
-            await chat.save();
-            return successResponse(res, MESSAGE.SUCCESS_CHAT_UPDATED, chat);
-        }
-    } catch (err) {
-        console.error(err);
-        return errorResponse(res, MESSAGE.INTERNAL_SERVER_ERROR);
-    }
-};
+// removed the deleteContact because deleting a chat object willl delete it for both users.
 
 const getMessages = async (req, res) => {
     try {
-        const { contactId } = req.body;
+        const { contactId } = req.query;
         const chat = await findChat({ _id: contactId });
 
         if (!chat) {
@@ -102,18 +77,16 @@ const getMessages = async (req, res) => {
 
 const sendMessage = async (req, res) => {
     try {
-        const { userId } = req.user;
+        const { id } = req.user;
         const { chatId, type, data } = req.body;
 
         const chat = await findChat({ _id: chatId });
+        const user = await findUserById({ _id: id });
         if (!chat) {
             return errorResponse(res, MESSAGE.ERROR_NOT_FOUND);
         }
 
-        const message = await createMessage({ user: userId, chatId, type, data });
-        chat.messages.push(message);
-        await chat.save();
-
+        const message = await createMessage({ chat, user,  type, data });
         return successResponse(res, MESSAGE.SUCCESS_MESSAGE_SENT, message);
     } catch (err) {
         console.error(err);
@@ -121,55 +94,11 @@ const sendMessage = async (req, res) => {
     }
 };
 
-const deleteMsg = async (req, res) => {
-    try {
-        const { messageId } = req.body;
-        const message = await findChat({ _id: messageId });
+// removed deleteMessage because deleting a message object will delete it for both users.
 
-        if (!message) {
-            return errorResponse(res, MESSAGE.ERROR_MESSAGE_NOT_FOUND);
-        }
-
-        await deleteMessage(messageId);
-        return successResponse(res, MESSAGE.SUCCESS_MESSAGE_DELETED);
-    } catch (err) {
-        console.error(err);
-        return errorResponse(res, MESSAGE.INTERNAL_SERVER_ERROR);
-    }
-};
-
-const getAllUser = async (req, res) => {
-    const { phone, id } = req.query;
-
-    try {
-        let user = null;
-
-        if (id) {
-            user = await UserModel.findById(id).lean();
-        } else if (phone) {
-            user = await UserModel.findOne({ phone }).lean();
-        }
-
-        if (!user) {
-            const users = await UserModel.find().lean();
-            return successResponse(res, MESSAGE.USERS_RETRIEVED, { users });
-        }
-
-        const { status, verified, ...userWithoutSensitiveInfo } = user;
-
-        return successResponse(res, MESSAGE.USER_RETRIEVED, { user: userWithoutSensitiveInfo });
-
-    } catch (err) {
-        console.error(err);
-        return errorResponse(res, MESSAGE.INTERNAL_SERVER_ERROR);
-    }
-};
 module.exports = {
     getContacts,
     createContact,
-    deleteContact,
     getMessages,
     sendMessage,
-    deleteMsg,
-    getAllUser
 };

@@ -62,4 +62,4 @@ const loginWithOtp = async (req, res) => {
     }
 };
 
-module.exports = {verifyUserOtp, loginWithOtp };
+module.exports = { verifyUserOtp, loginWithOtp };
